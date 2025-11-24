@@ -1,45 +1,34 @@
-import React, { useState } from 'react'; 
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar.jsx';
+import Home from './pages/Home.jsx';
+import DetallePizza from './pages/DetallePizza.jsx'; 
+import Cart from './pages/Cart.jsx'; 
+import Profile from './pages/Profile.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import NotFound from './pages/NotFound.jsx';
+import { CartProvider } from './Context/CartContext.jsx'; 
 
-import Navbar from "./components/Navbar.jsx";
-import Login from "./components/Login.jsx";
-import Register from "./components/Register.jsx";
-import Home from "./components/Home.jsx";
-import Footer from "./components/Footer.jsx"; 
-
-const mainContentStyles = {
-    minHeight: '60vh', 
-    maxWidth: '1000px',
-    margin: '30px auto',
-    padding: '20px',
+const App = () => {
+  return (
+    <CartProvider>
+      <BrowserRouter>
+        <Navbar /> 
+        <main className="min-h-screen bg-gray-50 font-inter">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/pizza/:id" element={<DetallePizza />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </BrowserRouter>
+    </CartProvider>
+  );
 };
-
-
-function App() {
-    const [currentView, setCurrentView] = useState('home');
-
-    const setCurrentViewHandler = (viewName) => {
-        setCurrentView(viewName);
-    };
-
-    const renderContent = () => {
-        if (currentView === 'login') {
-            return <Login onViewChange={setCurrentViewHandler} />;
-        }
-        if (currentView === 'register') {
-            return <Register onViewChange={setCurrentViewHandler} />;
-        }
-        return <Home />;
-    };
-
-    return (
-        <div>
-            <Navbar onViewChange={setCurrentViewHandler} />
-            <main style={mainContentStyles}> 
-                {renderContent()}
-            </main>
-            <Footer />
-        </div>
-    );
-}
 
 export default App;

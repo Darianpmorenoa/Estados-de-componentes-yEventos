@@ -1,15 +1,19 @@
-import { Container, Row, Col } from 'react-bootstrap';
+import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="bg-dark text-white py-4 mt-5"> 
-      <Container>
-        <Row>
-          <Col className="text-center">
-            <p className="mb-0">&copy; 2021 - Pizzería Mamma Mia! - Todos los derechos reservados</p>
-          </Col>
-        </Row>
-      </Container>
+    <footer className="bg-red-900 text-white mt-10">
+      <div className="container mx-auto px-4 py-8 text-center">
+        <p className="text-lg font-semibold mb-2">Mamma Mia! 🍕 Tu Pizzería Favorita</p>
+        <p className="text-sm text-red-200">
+          Desafío Latam | Consumo de API en React.
+        </p>
+        <div className="mt-4 space-x-4 text-red-300">
+          <a href="#" className="hover:text-white transition">Términos</a>
+          <span className="text-red-500">|</span>
+          <a href="#" className="hover:text-white transition">Privacidad</a>
+        </div>
+      </div>
     </footer>
   );
 };
