@@ -1,109 +1,78 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext.jsx';
+
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+    
+   
+    const { login } = useAuth(); 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-    if (!email || !password) {
-      setError('Por favor, ingresa tu correo electrónico y contraseña.');
-      return;
-    }
+        if (email === "user@mail.com" && password === "1234") {
+            const mockToken = "jwt-12345-admin-token";
+            const userData = { email, name: "Darian", role: "admin" };
+            
+            login(userData, mockToken); 
+            
+            alert(`Bienvenido de vuelta, ${userData.name}!`);
+            navigate('/'); 
+            alert('Error: Credenciales inválidas. Intenta con user@mail.com y 1234.');
+        }
+    };
 
-    setError('');
-
-    // *** Aquí iría la lógica real de autenticación (ej. llamada a una API) ***
-    console.log('Intentando iniciar sesión con:', { email, password });
-o
-    if (email === 'test@example.com' && password === '123456') {
-      alert('¡Inicio de sesión exitoso!');
-    } else {
-      setError('Credenciales incorrectas. Inténtalo de nuevo.');
-    }
-  };
-
-  return (
-    <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl">
-        {/* Encabezado */}
-        <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-6">
-          🔑 Iniciar Sesión
-        </h1>
-
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Campo de Correo Electrónico */}
-          <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Correo Electrónico
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="nombre@ejemplo.com"
-            />
-          </div>
-
-          {/* Campo de Contraseña */}
-          <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Contraseña
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {/* Mensaje de Error (si existe) */}
-          {error && (
-            <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md" role="alert">
-              {error}
+    return (
+        <div className="flex justify-center items-center h-screen">
+            <div className="w-full max-w-sm p-8 bg-white shadow-xl rounded-lg">
+                <h2 className="text-3xl font-bold mb-6 text-center text-red-700">Iniciar Sesión</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+                            Correo Electrónico
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="email"
+                            type="email"
+                            placeholder="user@mail.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+                            Contraseña
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                            id="password"
+                            type="password"
+                            placeholder="******************"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col items-center justify-between">
+                        <button
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-150"
+                            type="submit"
+                        >
+                            Ingresar
+                        </button>
+                        <p className="mt-4 text-sm text-gray-600">
+                            ¿No tienes cuenta? <Link to="/register" className="text-red-600 hover:text-red-800 font-bold">Regístrate</Link>
+                        </p>
+                    </div>
+                </form>
             </div>
-          )}
-
-          {/* Botón de Enviar */}
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
-          >
-            Iniciar Sesión
-          </button>
-        </form>
-
-        {/* Enlace de Olvidé mi Contraseña */}
-        <div className="mt-6 text-center">
-          <a 
-            href="#" 
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            ¿Olvidaste tu contraseña?
-          </a>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Login;

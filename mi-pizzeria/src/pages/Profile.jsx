@@ -1,41 +1,33 @@
 import React from 'react';
+import { useAuth } from '../Context/AuthContext.jsx';
+import { FaUserCircle } from 'react-icons/fa';
 
 const Profile = () => {
-  
-  const staticEmail = "usuario.ejemplo@pizzeria.cl";
+    const { token, logout } = useAuth(); 
 
-  const handleLogout = () => {
-    alert("¡Sesión cerrada! (La lógica real se implementará más adelante).");
-    console.log("Cerrar sesión estático activado.");
-  };
+    return (
+        <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-2xl text-center">
+            <FaUserCircle className="text-8xl text-red-500 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Mi Perfil</h1>
+            <p className="text-lg text-gray-600 mb-6">
+                ¡Bienvenido, Usuario Logueado!
+            </p>
+            
+            <div className="text-left space-y-3 mb-8 p-4 bg-gray-50 rounded-lg border">
+                <p className="font-semibold text-gray-700">Estado de Autenticación:</p>
+                <p className={`font-mono text-sm p-2 rounded ${token ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    Token Activo: {token ? 'true' : 'false (Error: No deberías estar aquí sin token!)'}
+                </p>
+            </div>
 
-  return (
-    <div className="container mx-auto px-4 py-16 max-w-md">
-      <div className="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-red-600">
-        <h1 className="text-3xl font-extrabold text-red-700 mb-6 text-center">
-          Tu Perfil
-        </h1>
-
-        <div className="space-y-4 mb-8">
-          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <span className="text-gray-500 font-medium">Email:</span>
-            <span className="text-gray-800 font-semibold">{staticEmail}</span>
-          </div>
-          
-          <div className="text-sm text-gray-500 text-center pt-2">
-            Estado actual es de "Usuario Invitado".
-          </div>
+            <button
+                onClick={logout}
+                className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition duration-300"
+            >
+                Cerrar Sesión
+            </button>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition duration-300 shadow-md transform hover:scale-[1.01]"
-        >
-          Cerrar Sesión
-        </button>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Profile;

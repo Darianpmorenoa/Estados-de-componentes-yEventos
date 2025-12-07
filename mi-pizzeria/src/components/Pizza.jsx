@@ -1,80 +1,121 @@
 import React, { useState, useEffect } from 'react';
-const PIZZA_ID = 'p001'; 
+import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar.jsx';
+import { useCart } from '../Context/CartContext.jsx';
+import { usePizza } from '../Context/PizzaContext.jsx';
+
+const formatCurrency = (amount) => {
+    return amount.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
+};
 
 const Pizza = () => {
-  const [pizza, setPizza] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
+    const { pizzas } = usePizza();
 
-  const API_URL = `http://localhost:5001/api/pizzas/${PIZZA_ID}`;
+    const [pizza, setPizza] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPizzaDetail = async () => {
-      try {
-        const response = await fetch(API_URL);
-        
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+    useEffect(() => {
+        const fetchPizzaDetails = async () => {
+            setLoading(true);
+            try {
+                const foundPizza = pizzas.find(p => p.id === id);
+
+                if (foundPizza) {
+                    setPizza(foundPizza);
+                } else {
+                    alert("Pizza no encontrada.");
+                    navigate('/'); 
+                }
+            } catch (error) {
+                console.error("Error al obtener el detalle de la pizza:", error);
+                alert("Ocurrió un error al cargar los detalles.");
+                navigate('/');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id && pizzas.length > 0) {
+            fetchPizzaDetails();
+        } else if (pizzas.length === 0) {
+            setLoading(true);
         }
-        
-        const data = await response.json();
-        setPizza(data); 
-      } catch (err) {
-        console.error(`Hubo un problema al obtener el detalle de la pizza ${PIZZA_ID}:`, err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    }, [id, pizzas, navigate]);
 
-    fetchPizzaDetail();
-  }, []); 
 
-  if (loading) {
-    return <div className="text-center my-5">Cargando detalle de la pizza...</div>;
-  }
+    if (loading) {
+        return (
+            <div className="text-center py-20">
+                <Navbar />
+                <p className="text-xl font-semibold">Cargando detalles de la pizza...</p>
+            </div>
+        );
+    }
 
-  if (error || !pizza) {
-    return <div className="alert alert-danger mx-5">Error: No se pudo cargar la pizza.</div>;
-  }
+    if (!pizza) {
+        return null; 
+    }
 
-  const { nombre, descripcion, precio, imagen, ingredientes } = pizza;
+    return (
+        <div>
+            <Navbar />
+            <div className="container mx-auto p-4 sm:p-8">
+                <div className="flex flex-col md:flex-row bg-white rounded-xl shadow-2xl overflow-hidden mt-10">
+                    
+                    {/* Columna de Imagen */}
+                    <div className="md:w-1/2">
+                        <img 
+                            src={pizza.img} 
+                            alt={pizza.name} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/600x400/FF5733/FFFFFF?text=Pizza" }}
+                        />
+                    </div>
 
-  return (
-    <div className="container my-5">
-      <div className="row border p-4 shadow-lg rounded">
-        <div className="col-md-6">
-          <img 
-            src={imagen} 
-            alt={nombre} 
-            className="img-fluid rounded" 
-            style={{ maxHeight: '400px', objectFit: 'cover', width: '100%' }} 
-          />
+                    {/* Columna de Detalles */}
+                    <div className="md:w-1/2 p-6 sm:p-10 flex flex-col justify-center">
+                        <h1 className="text-4xl font-extrabold text-red-700 mb-4 border-b pb-2">
+                            {pizza.name}
+                        </h1>
+
+                        <p className="text-gray-600 mb-6 text-lg">
+                            {pizza.desc}
+                        </p>
+
+                        <h2 className="text-xl font-bold text-gray-800 mb-3">
+                            Ingredientes:
+                        </h2>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700 mb-6 pl-4">
+                            {pizza.ingredients.map((ing, index) => (
+                                <li key={index} className="capitalize flex items-center">
+                                    <span className="text-red-500 mr-2">🍅</span> {ing}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="flex justify-between items-center mt-6 pt-4 border-t">
+                            <span className="text-3xl font-extrabold text-green-700">
+                                Precio: {formatCurrency(pizza.price)}
+                            </span>
+                            <button
+                                onClick={() => {
+                                    addToCart(pizza);
+                                    alert(`¡${pizza.name} añadida al carrito!`);
+                                }}
+                                className="bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg shadow-xl transition duration-200 transform hover:scale-105 flex items-center space-x-2"
+                            >
+                                <span className="text-xl">🛒</span>
+                                <span>Añadir al Carrito</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div className="col-md-6 d-flex flex-column justify-content-between">
-          <div>
-            <h1 className="display-4 fw-bold">{nombre}</h1>
-            <p className="lead border-bottom pb-3">{descripcion}</p>
-
-            <h3 className="mt-4">Ingredientes:</h3>
-            <ul>
-              {ingredientes && ingredientes.map((ingrediente, index) => (
-                <li key={index}>{ingrediente}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-            <span className="h3 fw-bold text-success">Precio: ${precio.toLocaleString()}</span>
-            <button className="btn btn-danger btn-lg">
-              🛒 Añadir al Carrito
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Pizza;

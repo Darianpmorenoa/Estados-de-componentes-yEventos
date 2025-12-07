@@ -1,139 +1,147 @@
 import React from 'react';
 import { useCart } from '../Context/CartContext.jsx';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { FaPlus, FaMinus, FaTrashAlt, FaShoppingCart } from 'react-icons/fa';
 
 const formatCurrency = (amount) => {
-  return amount.toLocaleString('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-    minimumFractionDigits: 0,
-  });
+    const num = Number(amount) || 0; 
+    return num.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' });
 };
 
 const Cart = () => {
-  const { cartItems, removeItem, updateQuantity, calculateTotal } = useCart();
-  const totalAmount = calculateTotal;
+    const { 
+        cart, 
+        total, 
+        increaseQuantity, 
+        decreaseQuantity, 
+        removeFromCart,
+        clearCart 
+    } = useCart();
+    const navigate = useNavigate();
 
-  const handleCheckout = () => {
-    const message = `¡Gracias por tu pedido! El total es ${formatCurrency(totalAmount)}. Proceso de pago simulado.`;
-    console.log("Proceso de Pago Iniciado:", message);
-  
-    alert("¡Pedido simulado con éxito! Revisa la consola para más detalles.");
-  };
-  
-  const handleQuantityChange = (id, change) => {
-    const item = cartItems.find(i => i.id === id);
-    if (item) {
-        updateQuantity(id, Math.max(0, item.quantity + change));
+    const CartItem = ({ item }) => {
+        const { id, name, price, img, quantity } = item;
+
+        if (!item || !id) return null; 
+
+        return (
+            <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition duration-150 ease-in-out">
+                <div className="flex items-center space-x-4 flex-grow">
+                    <img 
+                        src={img} 
+                        alt={name} 
+                        className="w-16 h-16 object-cover rounded-full shadow-md"
+                        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/A31F34/FFFFFF?text=Pizza" }}
+                    />
+                    <div>
+                        <p className="text-lg font-semibold text-gray-800">{name}</p>
+                        <p className="text-sm text-gray-500">{formatCurrency(price)} c/u</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-2 mr-4">
+                    <button
+                        onClick={() => decreaseQuantity(id)}
+                        className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-150 disabled:bg-red-300 active:bg-red-700"
+                        disabled={quantity <= 1}
+                        aria-label={`Disminuir la cantidad de ${name}`}
+                    >
+                        <FaMinus size={12} />
+                    </button>
+                    
+                    <span className="w-8 h-8 flex items-center justify-center bg-white text-gray-800 border border-gray-300 rounded-lg font-bold">
+                        {quantity}
+                    </span>
+
+                    <button
+                        onClick={() => increaseQuantity(id)}
+                        className="w-8 h-8 flex items-center justify-center bg-green-500 text-white rounded-full hover:bg-green-600 transition duration-150 active:bg-green-700"
+                        aria-label={`Aumentar la cantidad de ${name}`}
+                    >
+                        <FaPlus size={12} />
+                    </button>
+                </div>
+
+                <div className="w-24 text-right">
+                    <p className="text-lg font-bold text-gray-800">{formatCurrency(price * quantity)}</p>
+                </div>
+
+                <button
+                    onClick={() => removeFromCart(id)}
+                    className="ml-4 p-2 text-gray-500 hover:text-red-600 transition duration-150"
+                    aria-label={`Eliminar ${name} del carrito`}
+                >
+                    <FaTrashAlt size={20} />
+                </button>
+            </div>
+        );
+    };
+
+    if (!cart || cart.length === 0) {
+        return (
+            <div className="max-w-4xl mx-auto py-12 px-4 text-center">
+                <FaShoppingCart className="text-6xl text-gray-400 mx-auto mb-4" />
+                <h1 className="text-3xl font-bold text-gray-700 mb-2">Tu Carrito Está Vacío</h1>
+                <p className="text-gray-500 mb-6">Añade algunas pizzas deliciosas para comenzar tu pedido.</p>
+                <button 
+                    onClick={() => navigate('/')}
+                    className="bg-red-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-red-700 transition duration-300"
+                >
+                    Explorar Menú
+                </button>
+            </div>
+        );
     }
-  }
 
-
-  if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center h-[50vh]">
-        <h1 className="text-4xl font-extrabold text-red-700 mb-4">
-          Tu Carrito está Vacío 😔
-        </h1>
-        <p className="text-gray-600 mb-8">
-          ¡Añade unas deliciosas pizzas para comenzar tu pedido!
-        </p>
-        <Link 
-          to="/" 
-          className="bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-300 shadow-md"
-        >
-          Ver Menú de Pizzas
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-10 max-w-4xl">
-      <h1 className="text-4xl font-extrabold text-red-800 mb-8 text-center">
-        Tu Pedido
-      </h1>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        
-        <div className="lg:w-2/3 space-y-4">
-          {cartItems.map((item) => (
-            <div 
-              key={item.id} 
-              className="flex items-center bg-white p-4 rounded-xl shadow-lg border border-red-100 transition duration-300 hover:shadow-red-200"
-            >
-              <img 
-                src={item.img} 
-                alt={item.name} 
-                className="w-20 h-20 object-cover rounded-lg mr-4 border border-gray-200"
-                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/80x80/cccccc/333333?text=Pizza"; }} // Fallback de imagen
-              />
-              
-              <div className="flex-grow">
-                <h2 className="text-xl font-bold text-gray-800">{item.name}</h2>
-                <p className="text-red-600 font-semibold">{formatCurrency(item.price)}</p>
-              </div>
-
-              <div className="flex items-center space-x-2 mr-4">
-                <button
-                  onClick={() => handleQuantityChange(item.id, -1)}
-                  className="bg-red-100 text-red-600 w-8 h-8 rounded-full hover:bg-red-200 font-bold text-lg transition duration-200"
-                  aria-label="Disminuir cantidad"
-                >
-                  -
-                </button>
-                <span className="text-lg font-semibold w-8 text-center">{item.quantity}</span>
-                <button
-                  onClick={() => handleQuantityChange(item.id, 1)}
-                  className="bg-red-600 text-white w-8 h-8 rounded-full hover:bg-red-700 font-bold text-lg transition duration-200"
-                  aria-label="Aumentar cantidad"
-                >
-                  +
-                </button>
-              </div>
-              
-              <div className="w-24 text-right hidden sm:block">
-                <p className="text-lg font-bold text-gray-900">
-                  {formatCurrency(item.price * item.quantity)}
-                </p>
-              </div>
-
-              <button
-                onClick={() => removeItem(item.id)}
-                className="ml-4 text-gray-400 hover:text-red-500 transition duration-200"
-                aria-label="Eliminar ítem"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="lg:w-1/3">
-          <div className="bg-red-50 p-6 rounded-xl shadow-xl sticky lg:top-20 border border-red-200">
-            <h2 className="text-2xl font-bold text-red-800 border-b pb-3 mb-4">
-              Resumen del Pedido
-            </h2>
+        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl font-extrabold text-red-700 mb-8 border-b pb-4">Tu Carrito de Compras</h1>
             
-            <div className="flex justify-between text-xl font-semibold mb-6">
-              <span className="text-gray-700">Total a Pagar:</span>
-              <span className="text-red-700 font-extrabold">{formatCurrency(totalAmount)}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* Columna de Ítems del Carrito */}
+                <div className="lg:col-span-2">
+                    {cart.map(item => (
+                        <CartItem key={item.id} item={item} />
+                    ))}
+                </div>
+
+                {/* Columna de Resumen del Pedido */}
+                <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-fit">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-3">Resumen del Pedido</h2>
+                    
+                    <div className="space-y-3">
+                        <div className="flex justify-between text-gray-600">
+                            <span>Subtotal:</span>
+                            <span className="font-medium">{formatCurrency(total)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600">
+                            <span>Envío:</span>
+                            <span className="font-medium text-green-600">Gratis</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex justify-between text-2xl font-extrabold text-red-700 mt-5 pt-3 border-t-2 border-red-100">
+                        <span>Total:</span>
+                        <span>{formatCurrency(total)}</span>
+                    </div>
+
+                    <button
+                        onClick={() => console.log("Procediendo a Pagar...")} // Placeholder
+                        className="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition duration-300 mt-6"
+                    >
+                        Ir a Pagar
+                    </button>
+                    <button
+                        onClick={clearCart}
+                        className="w-full bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-300 transition duration-300 mt-3"
+                    >
+                        Vaciar Carrito
+                    </button>
+                </div>
             </div>
-
-            <button
-              onClick={handleCheckout}
-              className="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition duration-300 shadow-lg text-lg transform hover:scale-[1.01]"
-            >
-              Proceder al Pago
-            </button>
-          </div>
         </div>
-
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Cart;
